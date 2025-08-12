@@ -1,7 +1,5 @@
-
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import ReactFullpage from "@fullpage/react-fullpage";
 import "./LandingPage.css";
 
 const sections = [
@@ -12,9 +10,21 @@ const sections = [
   { name: "Sign in", title: "Sign in | Philonet", description: "Get in touch with us" }
 ];
 
-
 export default function LandingPage() {
-  const [activeSection, setActiveSection] = React.useState(0);
+  const [activeSection, setActiveSection] = useState(0);
+  const sectionRefs = useRef([]);
+  const wrapperRef = useRef(null);
+
+  const scrollToSection = (index) => {
+    sectionRefs.current[index]?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleScroll = () => {
+    const scrollPos = wrapperRef.current.scrollTop;
+    const windowHeight = window.innerHeight;
+    const index = Math.round(scrollPos / windowHeight);
+    setActiveSection(index);
+  };
 
   return (
     <HelmetProvider>
@@ -23,6 +33,7 @@ export default function LandingPage() {
         <meta name="description" content={sections[activeSection].description} />
       </Helmet>
 
+      {/* Bottom Navbar */}
       <nav className="bottom-navbar">
         <div className="logo">philonet</div>
         <div className="nav-links">
@@ -30,9 +41,7 @@ export default function LandingPage() {
             <span
               key={i}
               className={`nav-item ${activeSection === i ? "active" : ""}`}
-              onClick={() => {
-                document.querySelectorAll(".fp-nav ul li a")[i]?.click();
-              }}
+              onClick={() => scrollToSection(i)}
             >
               {item.name}
             </span>
@@ -40,26 +49,34 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Fullpage sections using render prop */}
-      <ReactFullpage
-        licenseKey={'OPEN-SOURCE-GPLV3-LICENSE'}
-        navigation
-        navigationPosition="right"
-        scrollingSpeed={800}
-        onLeave={(_, destination) => setActiveSection(destination.index)}
-        render={({ state, fullpageApi }) => {
-          return (
-            <div>
-              {sections.map((sec, i) => (
-                <div className="section" key={i}>
-                  {sec.description}
-                </div>
-              ))}
-            </div>
-          );
-        }}
-      />
+      {/* Right Side Dots */}
+      <div className="dots-navigation">
+        {sections.map((sec, i) => (
+          <span
+            key={i}
+            title={sec.name}
+            className={`dot ${activeSection === i ? "active" : ""}`}
+            onClick={() => scrollToSection(i)}
+          />
+        ))}
+      </div>
 
+      {/* Sections */}
+      <div
+        className="fullpage-wrapper"
+        ref={wrapperRef}
+        onScroll={handleScroll}
+      >
+        {sections.map((sec, i) => (
+          <section
+            key={i}
+            className="section"
+            ref={(el) => (sectionRefs.current[i] = el)}
+          >
+            {sec.description}
+          </section>
+        ))}
+      </div>
     </HelmetProvider>
   );
 }
