@@ -42,6 +42,7 @@ export default function LandingPage() {
 
       {/* Fullpage sections using render prop */}
       <ReactFullpage
+        licenseKey={'OPEN-SOURCE-GPLV3-LICENSE'}
         navigation
         navigationPosition="right"
         scrollingSpeed={800}
@@ -58,6 +59,7 @@ export default function LandingPage() {
           );
         }}
       />
+
     </HelmetProvider>
   );
 }
