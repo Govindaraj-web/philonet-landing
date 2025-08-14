@@ -1,101 +1,110 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useLocation, useNavigate } from "react-router-dom";
 import logoImg from "../assets/philonet.png";
+import Home from "../pages/Home";
+import HowItWorks from "../pages/HowItWorks";
+import About from "../pages/About";
+import Blogs from "../pages/Blogs";
+import SignIn from "../pages/SignIn";
 import "./LandingPage.css";
 
-const sections = [
-  { name: "Home", title: "Home | Philonet", description: "Philonet - A New Friendship Is One Thought Away" },
-  { name: "How it works", title: "How it works | Philonet", description: "Philonet works step by step" },
-  { name: "About", title: "Projects | Philonet", description: "Explore our projects" },
-  { name: "Blogs", title: "Blogs | Philonet", description: "Read the latest blogs" },
-  { name: "Sign in", title: "Sign in | Philonet", description: "Get in touch with us" }
+const sectionsConfig = [
+  { name: "Home",         title: "Home | Philonet",         description: "Philonet - A New Friendship Is One Thought Away", path: "/" },
+  { name: "How it works", title: "How it works | Philonet", description: "Philonet works step by step",                      path: "/how-it-works" },
+  { name: "About",        title: "Projects | Philonet",     description: "Explore our projects",                             path: "/about" },
+  { name: "Blogs",        title: "Blogs | Philonet",        description: "Read the latest blogs",                            path: "/blogs" },
+  { name: "Sign in",      title: "Sign in | Philonet",      description: "Get in touch with us",                             path: "/sign-in" },
 ];
 
+const sectionComponents = [Home, HowItWorks, About, Blogs, SignIn];
+
 export default function LandingPage() {
-  const [activeSection, setActiveSection] = useState(0);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+
   const sectionRefs = useRef([]);
   const wrapperRef = useRef(null);
 
-  // --- Typewriter state ---
-  const [typedText, setTypedText] = useState("");
-  const part1 = "philonet";
-  const part2 = "A new friendship is one thought away";
-
-  useEffect(() => {
-    let index = 0;
-    let phase = "typing1";
-    let timer;
-
-    const type = () => {
-      if (phase === "typing1") {
-        if (index <= part1.length) {
-          setTypedText(part1.slice(0, index));
-          index++;
-          timer = setTimeout(type, 80);
-        } else {
-          phase = "pause1";
-          timer = setTimeout(type, 800); // pause after Philonet
-        }
-      } 
-      else if (phase === "pause1") {
-        phase = "deleting1";
-        index = part1.length;
-        timer = setTimeout(type, 50);
-      } 
-      else if (phase === "deleting1") {
-        if (index >= 0) {
-          setTypedText(part1.slice(0, index));
-          index--;
-          timer = setTimeout(type, 50);
-        } else {
-          phase = "typing2";
-          index = 0;
-          timer = setTimeout(type, 200); // short pause before line 2
-        }
-      } 
-      else if (phase === "typing2") {
-        if (index <= part2.length) {
-          setTypedText(part2.slice(0, index));
-          index++;
-          timer = setTimeout(type, 80);
-        }
-      }
-    };
-
-    type();
-    return () => clearTimeout(timer);
+  const pathToIndex = useMemo(() => {
+    const map = new Map();
+    sectionsConfig.forEach((s, i) => map.set(s.path, i));
+    return map;
   }, []);
 
-  const scrollToSection = (index) => {
-    sectionRefs.current[index]?.scrollIntoView({ behavior: "smooth" });
+  
+  const [activeSection, setActiveSection] = useState(0);
+
+  useEffect(() => {
+    navigate("/", { replace: true });
+    setTimeout(() => {
+      sectionRefs.current[0]?.scrollIntoView({ behavior: "instant", block: "start" });
+    }, 0);
+  }, []);
+
+  // Scroll to section based on URL
+  useEffect(() => {
+    const idx = pathToIndex.get(pathname);
+    if (typeof idx === "number" && idx !== activeSection) {
+      setActiveSection(idx);
+      setTimeout(() => {
+        sectionRefs.current[idx]?.scrollIntoView({ behavior: "smooth" });
+      }, 0);
+    }
+  }, [pathname]);
+
+  // Update URL when active section changes
+  useEffect(() => {
+    const desiredPath = sectionsConfig[activeSection].path;
+    if (pathname !== desiredPath) {
+      navigate(desiredPath, { replace: true });
+    }
+  }, [activeSection]);
+
+  const scrollToSection = (index, pushToHistory = true) => {
+    const el = sectionRefs.current[index];
+    if (!el) return;
+    const path = sectionsConfig[index].path;
+    if (pushToHistory && pathname !== path) {
+      navigate(path, { replace: false });
+    }
+    el.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleScroll = () => {
-    const scrollPos = wrapperRef.current.scrollTop;
+    const container = wrapperRef.current;
+    if (!container) return;
+    const scrollPos = container.scrollTop;
     const windowHeight = window.innerHeight;
     const index = Math.round(scrollPos / windowHeight);
-    setActiveSection(index);
+    if (index !== activeSection) setActiveSection(index);
   };
 
   return (
-    <HelmetProvider>
+    <>
       <Helmet>
-        <title>{sections[activeSection].title}</title>
-        <meta name="description" content={sections[activeSection].description} />
+        <title>{sectionsConfig[activeSection].title}</title>
+        <meta
+          name="description"
+          content={sectionsConfig[activeSection].description}
+        />
       </Helmet>
 
       {/* Bottom Navbar */}
       <nav className="bottom-navbar">
-        <img src={logoImg} alt="Philonet Logo" className="logo" />
+        <img
+          src={logoImg}
+          alt="Philonet Logo"
+          className="logo"
+          onClick={() => scrollToSection(0, true)}
+        />
         <div className="nav-links">
-          {sections.map((item, i) => (
+          {sectionsConfig.map((item, i) => (
             <span
-              key={i}
+              key={item.name}
               className={`nav-item ${activeSection === i ? "active" : ""}`}
-              style={{
-                color: i === 0 ? "#3F8EFC" : "grey"
-              }}
-              onClick={() => scrollToSection(i)}
+              style={{ color: i === 0 ? "#3F8EFC" : "grey" }}
+              onClick={() => scrollToSection(i, true)}
             >
               {item.name}
             </span>
@@ -105,36 +114,32 @@ export default function LandingPage() {
 
       {/* Right Side Dots */}
       <div className="dots-navigation">
-        {sections.map((sec, i) => (
+        {sectionsConfig.map((sec, i) => (
           <span
-            key={i}
+            key={sec.name}
             title={sec.name}
             className={`dot ${activeSection === i ? "active" : ""}`}
-            onClick={() => scrollToSection(i)}
+            onClick={() => scrollToSection(i, true)}
           />
         ))}
       </div>
 
-      {/* Sections */}
+      {/* Sections (full-page snap) */}
       <div
         className="fullpage-wrapper"
         ref={wrapperRef}
         onScroll={handleScroll}
       >
-        {sections.map((sec, i) => (
+        {sectionComponents.map((Comp, i) => (
           <section
-            key={i}
+            key={sectionsConfig[i].name}
             className="section"
             ref={(el) => (sectionRefs.current[i] = el)}
           >
-            {i === 0 ? (
-              <span className="typewriter">{typedText}</span>
-            ) : (
-              sec.description
-            )}
+            <Comp />
           </section>
         ))}
       </div>
-    </HelmetProvider>
+    </>
   );
 }

@@ -1,0 +1,96 @@
+
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background: linear-gradient(135deg, #4facfe, #00f2fe); /* gradient inside card */
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  width: 320px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 60px;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  margin: 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+}
+
+.welcome-text {
+  font-size: 0.9rem;
+  color: #f0f0f0;
+  margin-bottom: 1.5rem;
+}
+
+.login-input {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 10px;
+  background: #0066ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s;
+}
+
+.login-btn:hover {
+  background: #004fcc;
+}
+
+.forgot-link {
+  display: block;
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: white;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+.auth-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.auth-tab {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.auth-tab.active {
+  border-bottom: 2px solid white;
+  font-weight: bold;
+}
