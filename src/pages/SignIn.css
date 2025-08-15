@@ -15,20 +15,8 @@
   text-align: center;
 }
 
-.login-logo {
-  width: 60px;
-  margin-bottom: 1rem;
-}
-
-h2 {
-  margin: 0.5rem 0;
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: white;
-}
-
 .welcome-text {
-  font-size: 0.9rem;
+  font-size: 1.0rem;
   color: #f0f0f0;
   margin-bottom: 1.5rem;
 }
@@ -93,4 +81,24 @@ h2 {
 .auth-tab.active {
   border-bottom: 2px solid white;
   font-weight: bold;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  gap: 0.5rem; 
+  margin-bottom: 1.8rem;
+}
+
+.login-logo {
+  height: 60px; 
+  width: auto;
+}
+
+.brand-name {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1; 
 }
