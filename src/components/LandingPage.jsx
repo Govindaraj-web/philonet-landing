@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
-import logoImg from "../assets/philonet.png";
 import Home from "../pages/Home";
 import HowItWorks from "../pages/HowItWorks";
 import About from "../pages/About";
 import Blogs from "../pages/Blogs";
 import SignIn from "../pages/SignIn";
+import BottomNavbar from "./BottomNavbar";
+import DotsNavigation from "./DotsNavigation";
 import "./LandingPage.css";
 
 const sectionsConfig = [
@@ -32,9 +33,9 @@ export default function LandingPage() {
     return map;
   }, []);
 
-  
   const [activeSection, setActiveSection] = useState(0);
-
+  
+   // Initial load: always start at Home
   useEffect(() => {
     navigate("/", { replace: true });
     setTimeout(() => {
@@ -61,6 +62,7 @@ export default function LandingPage() {
     }
   }, [activeSection]);
 
+  // Smooth scroll function
   const scrollToSection = (index, pushToHistory = true) => {
     const el = sectionRefs.current[index];
     if (!el) return;
@@ -71,6 +73,7 @@ export default function LandingPage() {
     el.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Scroll handler for detecting active section
   const handleScroll = () => {
     const container = wrapperRef.current;
     if (!container) return;
@@ -90,41 +93,18 @@ export default function LandingPage() {
         />
       </Helmet>
 
-      {/* Bottom Navbar */}
-      <nav className="bottom-navbar">
-        <img
-          src={logoImg}
-          alt="Philonet Logo"
-          className="logo"
-          onClick={() => scrollToSection(0, true)}
-        />
-        <div className="nav-links">
-          {sectionsConfig.map((item, i) => (
-            <span
-              key={item.name}
-              className={`nav-item ${activeSection === i ? "active" : ""}`}
-              style={{ color: i === 0 ? "#3F8EFC" : "grey" }}
-              onClick={() => scrollToSection(i, true)}
-            >
-              {item.name}
-            </span>
-          ))}
-        </div>
-      </nav>
+      <BottomNavbar
+        sectionsConfig={sectionsConfig}
+        activeSection={activeSection}
+        scrollToSection={scrollToSection}
+      />
 
-      {/* Right Side Dots */}
-      <div className="dots-navigation">
-        {sectionsConfig.map((sec, i) => (
-          <span
-            key={sec.name}
-            title={sec.name}
-            className={`dot ${activeSection === i ? "active" : ""}`}
-            onClick={() => scrollToSection(i, true)}
-          />
-        ))}
-      </div>
+      <DotsNavigation
+        sectionsConfig={sectionsConfig}
+        activeSection={activeSection}
+        scrollToSection={scrollToSection}
+      />
 
-      {/* Sections (full-page snap) */}
       <div
         className="fullpage-wrapper"
         ref={wrapperRef}
