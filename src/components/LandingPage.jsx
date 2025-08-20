@@ -63,25 +63,30 @@ export default function LandingPage() {
   }, [activeSection]);
 
   // Smooth scroll function
-  const scrollToSection = (index, pushToHistory = true) => {
-    const el = sectionRefs.current[index];
-    if (!el) return;
-    const path = sectionsConfig[index].path;
-    if (pushToHistory && pathname !== path) {
-      navigate(path, { replace: false });
-    }
-    el.scrollIntoView({ behavior: "smooth" });
-  };
+const scrollToSection = (index) => {
+  const el = sectionRefs.current[index];
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
 
   // Scroll handler for detecting active section
-  const handleScroll = () => {
-    const container = wrapperRef.current;
-    if (!container) return;
-    const scrollPos = container.scrollTop;
-    const windowHeight = window.innerHeight;
-    const index = Math.round(scrollPos / windowHeight);
-    if (index !== activeSection) setActiveSection(index);
-  };
+ const handleScroll = () => {
+  const container = wrapperRef.current;
+  if (!container) return;
+
+  const scrollPos = container.scrollTop;
+  let foundIndex = 0;
+
+  sectionRefs.current.forEach((el, idx) => {
+    if (el.offsetTop <= scrollPos + 10) { // small threshold
+      foundIndex = idx;
+    }
+  });
+
+  if (foundIndex !== activeSection) setActiveSection(foundIndex);
+};
+
 
   return (
     <>

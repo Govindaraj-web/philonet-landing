@@ -1,104 +1,119 @@
-
-.login-container {
+/* Full page background */
+.welcome-container {
+  background: #000000;
+  color: #ffffff;
   height: 100vh;
+  width: 100%;
+  font-family: 'Inter', 'Humane', sans-serif;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 
-.login-card {
-  background: linear-gradient(135deg, #4facfe, #00f2fe); /* gradient inside card */
-  padding: 2rem;
+
+/* Welcome card */
+.welcome-card {
+  background: #000000;
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  width: 320px;
+  padding: 2.5rem;
+  max-width: 320px;
+  width: 90%;
   text-align: center;
+  margin-top:0.5rem;
 }
 
-.welcome-text {
-  font-size: 1.0rem;
-  color: #f0f0f0;
-  margin-bottom: 1.5rem;
+.brand-logo {
+  background-color: white;
+  color: black;
+  width: 48px;
+  margin-right: 0.5rem;
 }
 
-.login-input {
-  width: 100%;
-  padding: 10px;
-  margin: 0.5rem 0;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  font-size: 0.9rem;
-  background: white;
-}
 
-.login-btn {
-  width: 100%;
-  padding: 10px;
-  background: #0066ff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: background 0.3s;
+/* Title + Subtitle */
+.welcome-title {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin: 1rem 0;
 }
-
-.login-btn:hover {
-  background: #004fcc;
-}
-
-.forgot-link {
-  display: block;
-  margin-top: 0.8rem;
-  font-size: 0.85rem;
-  color: white;
-  text-decoration: none;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-.auth-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
+.welcome-subtitle {
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #a3a3a3;
+  line-height: 1.5;
   margin-bottom: 1rem;
 }
 
-.auth-tab {
+/* Features list */
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.feature-list li {
+  margin-bottom: 0.8rem;
+}
+.bullet {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  margin-right: 0.6rem;
+}
+
+.user-popup {
+  position: fixed; /* float over the page */
+  top: 10rem;
+  background: black;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem 3rem;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 9999;
+  width: 230px;
+  height: 350px;
+  text-align: center;
+  animation: popupFade 0.3s ease;
+}
+.user-popup .close-btn {
+  position: absolute;
+  top: 4px;
+  right: 6px;
   background: transparent;
   border: none;
-  color: white;
-  font-size: 1rem;
+  color: #fff;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding-bottom: 4px;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s;
 }
 
-.auth-tab.active {
-  border-bottom: 2px solid white;
-  font-weight: bold;
+.profile-pic {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
 }
 
-.brand-header {
-  display: flex;
-  align-items: center; 
-  justify-content: center;
-  gap: 0.5rem; 
-  margin-bottom: 1.8rem;
+.email {
+  font-size: 0.8rem;
+  color: #bbb;
+}
+ .u-name{
+  font-size: 2rem;
 }
 
-.login-logo {
-  height: 60px; 
-  width: auto;
+@keyframes popupFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.brand-name {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: white;
-  line-height: 1; 
+/* Footer */
+.footer-text {
+  font-size: 0.8rem;
+  color: #737373;
+  margin-top: 1.2rem;
 }

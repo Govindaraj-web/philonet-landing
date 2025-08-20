@@ -1,128 +1,70 @@
 import React, { useState } from "react";
-import "./SignIn.css";
 import logo from "../assets/philonet.png";
+import "./SignIn.css";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
-export default function SignIn() {
-  const [isSignIn, setIsSignIn] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    // Password match check for sign up
-    if (!isSignIn && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setError("");
-    // Submit logic here
-    console.log({
-      name: !isSignIn ? name : undefined,
-      email,
-      password
-    });
-  };
+export default function WelcomePanel() {
+  const [user, setUser] = useState(null);
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        {/* Brand Header */}
-        <div className="brand-header">
-          <img src={logo} alt="Philonet Logo" className="login-logo" />
-          <span className="brand-name">philonet</span>
-        </div>
+    <div className="welcome-container">
+      {/* Card */}
+      <div className="welcome-card">
+        <img src={logo} alt="Philonet Logo" className="brand-logo" />
 
-        {/* Title & Description */}
-       
-        <p className="welcome-text">
-          {isSignIn
-            ? "Welcome to the thinking layer of real conversations"
-            : "Create your account to start your journey"}
+        <h2 className="welcome-title">Welcome to Philonet</h2>
+        <p className="welcome-subtitle">
+          Your thinking layer over the internet — capture sparks as you browse,
+          share ideas, and connect with like-minded people while learning what
+          matters to you.
         </p>
 
-        {/* Error Message */}
-        {error && <p className="error-text">{error}</p>}
+        {/* Features */}
+        <ul className="feature-list">
+          <li>
+            <span className="bullet" /> <b>Spark Anywhere</b> — Share moments and
+            ideas as you explore the web
+          </li>
+          <li>
+            <span className="bullet" /> <b>Only What Matters</b> — A feed shaped
+            by your interests
+          </li>
+          <li>
+            <span className="bullet" /> <b>Better Learning</b> — Turn discoveries
+            into lasting knowledge
+          </li>
+          <li>
+            <span className="bullet" /> <b>Real Connections</b> — Engage with
+            communities that inspire you
+          </li>
+        </ul>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          {!isSignIn && (
-            <input
-              type="text"
-              placeholder="Enter your name"
-              className="login-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="login-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Enter your password"
-            className="login-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {!isSignIn && (
-            <input
-              type="password"
-              placeholder="Confirm your password"
-              className="login-input"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          )}
-
-          <button type="submit" className="login-btn">
-            {isSignIn ? "Login" : "Register"}
-          </button>
-        </form>
-
-        {isSignIn ? (
-          <>
-            <a href="#" className="forgot-link">
-              Forgot password?
-            </a>
-            <a
-              href="#"
-              className="forgot-link"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsSignIn(false);
-              }}
-            >
-              Not registered? Sign Up
-            </a>
-          </>
-        ) : (
-          <a
-            href="#"
-            className="forgot-link"
-            onClick={(e) => {
-              e.preventDefault();
-              setIsSignIn(true);
+        {/* Google OAuth Login */}
+        {!user ? (
+          <GoogleLogin
+            onSuccess={(response) => {
+              const userInfo = jwtDecode(response.credential);
+              setUser(userInfo);
+              console.log("User Info:", userInfo);
             }}
-          >
-            Already have an account? Sign In
-          </a>
+            onError={() => {
+              console.log("Login Failed");
+            }}
+          />
+        ) : (
+          <div className="user-popup">
+            <button className="close-btn" onClick={() => setUser(null)}>×</button>
+            <img src={user.picture} alt={user.name} className="profile-pic" />
+            <p className="u-name">Welcome, <b>{user.name}</b> 👋</p>
+            <p className="email">{user.email}</p>
+          </div>
         )}
+
+        <p className="footer-text">
+          New to Philonet? We’ll create your account automatically when you sign
+          in.
+        </p>
       </div>
     </div>
   );
