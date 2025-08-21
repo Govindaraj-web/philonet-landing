@@ -9,7 +9,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-      <GoogleOAuthProvider clientId="1056439595907-u11pnoqp7c3ic04h0q2gf55g9bekslug.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
         <App />
         </GoogleOAuthProvider>
       </BrowserRouter>
