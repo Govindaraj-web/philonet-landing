@@ -1,11 +1,31 @@
 import React, { useState } from "react";
 import logo from "../assets/philonet.png";
 import "./SignIn.css";
-import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function WelcomePanel() {
   const [user, setUser] = useState(null);
+
+  // Google OAuth login handler
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // Fetch user profile from Google API
+        const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        });
+        const userInfo = await res.json();
+        setUser(userInfo);
+        console.log("User Info:", userInfo);
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+      }
+    },
+    onError: () => console.log("Login Failed"),
+    scope: "openid profile email",
+  });
 
   return (
     <div className="welcome-container">
@@ -40,18 +60,16 @@ export default function WelcomePanel() {
           </li>
         </ul>
 
-        {/* Google OAuth Login */}
+        {/* Custom Google OAuth Button */}
         {!user ? (
-          <GoogleLogin
-            onSuccess={(response) => {
-              const userInfo = jwtDecode(response.credential);
-              setUser(userInfo);
-              console.log("User Info:", userInfo);
-            }}
-            onError={() => {
-              console.log("Login Failed");
-            }}
-          />
+          <button className="custom-google-btn" onClick={() => login()}>
+            <img
+              src="https://developers.google.com/identity/images/g-logo.png"
+              alt="Google logo"
+              className="google-icon"
+            />
+            Continue with Google
+          </button>
         ) : (
           <div className="user-popup">
             <button className="close-btn" onClick={() => setUser(null)}>×</button>

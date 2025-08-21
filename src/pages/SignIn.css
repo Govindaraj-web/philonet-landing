@@ -10,7 +10,6 @@
   align-items: center;
 }
 
-
 /* Welcome card */
 .welcome-card {
   background: #000000;
@@ -19,16 +18,15 @@
   max-width: 320px;
   width: 90%;
   text-align: center;
-  margin-top:0.5rem;
+  margin-top: 0.2rem;
 }
 
 .brand-logo {
   background-color: white;
-  color: black;
-  width: 48px;
+  width: 45px;
   margin-right: 0.5rem;
+  border-radius: 10px;
 }
-
 
 /* Title + Subtitle */
 .welcome-title {
@@ -65,8 +63,39 @@
   margin-right: 0.6rem;
 }
 
+/* Custom Google Button */
+.custom-google-btn {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #3b82f6;
+  color: white;
+  border-radius: 12px;
+  padding: 0.8rem;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-google-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+/* User Popup */
 .user-popup {
-  position: fixed; /* float over the page */
+  position: fixed;
   top: 10rem;
   background: black;
   border: 1px solid #333;
@@ -102,7 +131,7 @@
   font-size: 0.8rem;
   color: #bbb;
 }
- .u-name{
+.u-name {
   font-size: 2rem;
 }
 

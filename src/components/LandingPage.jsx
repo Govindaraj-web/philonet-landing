@@ -21,6 +21,15 @@ const sectionsConfig = [
 const sectionComponents = [Home, HowItWorks, About, Blogs, SignIn];
 
 export default function LandingPage() {
+  
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // simulate loading time (e.g., images, API, etc.)
+    const timer = setTimeout(() => setIsLoaded(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -88,14 +97,27 @@ const scrollToSection = (index) => {
 };
 
 
+
   return (
     <>
+     {!isLoaded && (
+        <div className="loading-screen">
+          <div className="loading-box">
+            <div className="loading-brand">Philonet</div>
+            <div className="loading-text">Loading</div>
+            <div className="loading-bar">
+              <div className="loading-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+      )}
       <Helmet>
         <title>{sectionsConfig[activeSection].title}</title>
         <meta
           name="description"
           content={sectionsConfig[activeSection].description}
         />
+        
       </Helmet>
 
       <BottomNavbar

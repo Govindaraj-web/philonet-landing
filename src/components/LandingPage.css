@@ -11,6 +11,8 @@ body {
   overflow-y: auto; 
   height: 100vh;
   scroll-snap-type: y proximity; 
+  scroll-behavior: smooth; /* smooth scroll for JS triggers */
+  -webkit-overflow-scrolling: touch; /* momentum scrolling on iOS */
 }
 
 .fullpage-wrapper::-webkit-scrollbar {
@@ -178,7 +180,7 @@ body {
   background: grey;
   opacity: 0.4;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s, background-color 0.3s ease, opacity 0.3s ease;
 }
 
 .dot.active {
@@ -296,5 +298,67 @@ body {
   .side-menu{
     width: 100px;
   
+  }
+}
+/* Fullscreen overlay */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Box content */
+.loading-box {
+  text-align: center;
+  color: white;
+  font-family: Inter, sans-serif;
+}
+
+.loading-brand {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  color: #a3a3a3;
+}
+
+.loading-text {
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.loading-bar {
+  margin-top: 16px;
+  height: 2px;
+  width: 260px;
+  background: #262626;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-bar-fill {
+  position: absolute;
+  left: -100%;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: #3b82f6;
+  animation: loading-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes loading-slide {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 0%;
+  }
+  100% {
+    left: 100%;
   }
 }
