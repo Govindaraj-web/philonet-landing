@@ -1,7 +1,9 @@
-
+/* ========== Global Styles ========== */
 body, html {
   margin: 0;
   padding: 0;
+  height: auto;
+  overflow-y: auto;
   font-family: Inter, Humane, ui-sans-serif, system-ui, -apple-system;
   background-color: black;
   color: white;
@@ -13,15 +15,19 @@ body, html {
   font-weight: 300;
   position: relative;
   overflow-x: hidden;
+  overflow-y: visible; /* ensure vertical scroll */
   padding-bottom: 4rem;
 }
 
-/* Background layers */
+/* ========== Background Layers ========== */
 .background-layer,
 .background-accent {
   pointer-events: none;
-  position: fixed;
-  inset: 0;
+  position: absolute; /* changed from fixed */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: -10;
 }
 
@@ -37,7 +43,7 @@ body, html {
   background-size: 32px 32px;
 }
 
-/* Header */
+/* ========== Header ========== */
 .header-wrapper {
   padding-top: 4rem;
   text-align: center;
@@ -54,12 +60,11 @@ body, html {
 
 .title-underline {
   margin: 0.75rem auto;
-  height: 3px; /* thicker for visibility */
+  height: 3px;
   width: min(420px, 60%);
   background: linear-gradient(90deg, transparent, #3b82f6, transparent);
   border-radius: 2px;
 }
-
 
 .posted-at {
   font-size: 0.75rem;
@@ -69,7 +74,7 @@ body, html {
   letter-spacing: 0.12em;
 }
 
-/* Categories / Tags */
+/* ========== Categories / Tags ========== */
 .category-tag-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -108,7 +113,7 @@ body, html {
   transform: translateY(-1px) scale(1.02);
 }
 
-/* Description */
+/* ========== Description ========== */
 .blog-description {
   font-size: clamp(20px, 2vw, 24px);
   color: #e5e5e5;
@@ -116,7 +121,7 @@ body, html {
   letter-spacing: 0.01em;
 }
 
-/* Hero / Thumbnail */
+/* ========== Hero / Thumbnail ========== */
 .hero-wrapper {
   display: flex;
   justify-content: center;
@@ -161,7 +166,7 @@ body, html {
   background-size: auto;
 }
 
-/* Markdown Content */
+/* ========== Markdown Content ========== */
 .blog-content {
   max-width: 720px;
   margin: 0 auto;
@@ -240,85 +245,34 @@ body, html {
   padding: 12px;
   font-size: 18px;
 }
+
 /* ========== Responsive Adjustments ========== */
 @media screen and (max-width: 1024px) {
-  .blog-title {
-    font-size: clamp(36px, 6vw, 64px);
-  }
-  .blog-description {
-    font-size: clamp(18px, 1.8vw, 22px);
-  }
-  .blog-content {
-    padding: 2rem 1rem;
-  }
+  .blog-title { font-size: clamp(36px, 6vw, 64px); }
+  .blog-description { font-size: clamp(18px, 1.8vw, 22px); }
+  .blog-content { padding: 2rem 1rem; }
 }
 
 @media screen and (max-width: 768px) {
-  .blog-title {
-    font-size: clamp(28px, 7vw, 48px);
-    line-height: 1.2;
-  }
-  .title-underline {
-    width: 70%;
-  }
-  .blog-description {
-    font-size: 18px;
-  }
-  .category-tag-wrapper {
-    gap: 0.4rem;
-  }
-  .hero-container {
-    border-radius: 14px;
-  }
-  .hero-figure {
-    border-radius: 12px;
-  }
-  .blog-content h2 {
-    font-size: clamp(24px, 5vw, 32px);
-  }
-  .blog-content h3 {
-    font-size: clamp(20px, 4.5vw, 28px);
-  }
-  .blog-content p,
-  .blog-content ul,
-  .blog-content ol {
-    font-size: 18px;
-    line-height: 1.7;
-  }
+  .blog-title { font-size: clamp(28px, 7vw, 48px); line-height: 1.2; }
+  .title-underline { width: 70%; }
+  .blog-description { font-size: 18px; }
+  .category-tag-wrapper { gap: 0.4rem; }
+  .hero-container { border-radius: 14px; }
+  .hero-figure { border-radius: 12px; }
+  .blog-content h2 { font-size: clamp(24px, 5vw, 32px); }
+  .blog-content h3 { font-size: clamp(20px, 4.5vw, 28px); }
+  .blog-content p, .blog-content ul, .blog-content ol { font-size: 18px; line-height: 1.7; }
 }
 
 @media screen and (max-width: 480px) {
-  .blog-title {
-    font-size: 26px;
-  }
-  .title-underline {
-    width: 90%;
-    height: 2px;
-  }
-  .blog-description {
-    font-size: 16px;
-  }
-  .category-link,
-  .tag {
-    font-size: 10px;
-    padding: 2px 5px;
-  }
-  .blog-content h2 {
-    font-size: 22px;
-  }
-  .blog-content h3 {
-    font-size: 18px;
-  }
-  .blog-content p,
-  .blog-content ul,
-  .blog-content ol {
-    font-size: 16px;
-  }
-  .blog-content table {
-    font-size: 12px; /* further smaller for very small screens */
-  }
-  .blog-content th,
-  .blog-content td {
-    padding: 4px 6px;
-  }
+  .blog-title { font-size: 26px; }
+  .title-underline { width: 90%; height: 2px; }
+  .blog-description { font-size: 16px; }
+  .category-link, .tag { font-size: 10px; padding: 2px 5px; }
+  .blog-content h2 { font-size: 22px; }
+  .blog-content h3 { font-size: 18px; }
+  .blog-content p, .blog-content ul, .blog-content ol { font-size: 16px; }
+  .blog-content table { font-size: 12px; }
+  .blog-content th, .blog-content td { padding: 4px 6px; }
 }
