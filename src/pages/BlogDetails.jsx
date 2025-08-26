@@ -1,47 +1,81 @@
+// BlogDetails.jsx
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Blogs from "./Blogs";
+import { useParams, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 
 export default function BlogDetails() {
   const { articleId } = useParams();
+  const navigate = useNavigate();
   const [blogData, setBlogData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!articleId) return;
-
-    fetch("https://philoquent-genie-389259153114.us-central1.run.app/v1/room/article/public", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ articleId }),
-    })
-      .then(res => {
+    const fetchArticle = async () => {
+      try {
+        const res = await fetch(
+          "https://philoquent-genie-389259153114.us-central1.run.app/v1/room/article/public",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ articleId }),
+          }
+        );
         if (!res.ok) throw new Error("Blog not found");
-        return res.json();
-      })
-      .then(data => {
-        const formattedData = {
-          name: data.name || "Philonet",
-          title: data.title || "Untitled Blog",
-          postedAt: data.postedAt || new Date().toDateString(),
-          thumbnail: data.thumbnail || "https://placehold.co/1200x600",
-          description: data.description || "",
-          categories: data.categories || [],
-          tags: data.tags || [],
-          summaryMarkdown: data.content || "No content available.",
-        };
-        setBlogData(formattedData);
+        const data = await res.json();
+        setBlogData(data.article);
         setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         setError(err.message);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchArticle();
   }, [articleId]);
 
-  if (loading) return <p style={{textAlign:"center"}}>Loading blog...</p>;
-  if (error) return <h2 style={{textAlign:"center"}}>404 - Blog not found</h2>;
+if (loading)
+  return (
+    <div className="loading1">
+      <div className="spinner1"></div>
+    </div>
+  );
 
-  return <Blogs data={blogData} />;
+if (error)
+  return (
+    <div className="error1">
+      Error: {error}
+    </div>
+  );
+
+  if (!blogData) return null;
+
+  return (
+    <div className="blog-details-wrapper">
+      <button onClick={() => navigate("/")} className="back-home-btn">
+        <span className="arrow">⬅</span>
+        <span className="text">Back to Home</span>
+      </button>
+      <div className="blog-details-page">
+        {blogData.thumbnail_url && (
+          <div className="thumbnail-wrapper">
+            <img
+              src={blogData.thumbnail_url}
+              alt={blogData.title}
+              className="blog-details-thumbnail"
+            />
+          </div>
+        )}
+        <h1 className="blog-title">{blogData.title}</h1>
+        <p className="blog-summary">{blogData.summary}</p>
+        <div className="blog-content1">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {blogData.content}
+          </ReactMarkdown>
+        </div>
+      </div>
+    </div>
+  );
 }

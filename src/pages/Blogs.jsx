@@ -1,86 +1,95 @@
-import React, { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import "./Blog.css";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async"; // <-- import
+import "./Blogs.css";
 
-const defaultData = {
-  name: "Philonet",
-  title: "Designing Humane Social Systems",
-  postedAt: "August 15, 2025",
-  thumbnail: "https://placehold.co/1200x600/000000/ffffff/png?text=Thumbnail+Preview",
-  description: "A blueprint for building a network where context, consent, and clarity drive every interaction.",
-  categories: ["Product", "Design", "Trust & Safety"],
-  tags: ["philosophy", "architecture", "sparks", "privacy"],
-  summaryMarkdown: `
-## Summary
+export default function Blogs() {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-This post outlines **Philonet**'s approach to building a humane network. We cover guiding principles, a simple content model ("spark"), and moderation levers.
+  const articleIds = [4839, 4840, 4841, 4842, 4843, 4844];
 
-### Highlights
-- Context-first content primitives
-- Transparent, layered privacy controls
-- Lightweight signals over engagement traps
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const results = await Promise.all(
+          articleIds.map(async (id) => {
+            const res = await fetch(
+              "https://philoquent-genie-389259153114.us-central1.run.app/v1/room/article/public",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ articleId: id }),
+              }
+            );
+            if (!res.ok) throw new Error(`Blog ${id} not found`);
+            const data = await res.json();
+            return data.article;
+          })
+        );
 
-### Reference Table
+        setBlogs(results.filter(Boolean));
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
 
-| Principle | Description | Signal |
-|---|---|---|
-| Context | Every spark carries provenance, scope, and purpose. | Source, Audience |
-| Consent | Sharing & remixing is opt-in, reversible, and logged. | Grants |
-| Clarity | Semantics > virality. Plain, structured metadata. | Facets |
+    fetchBlogs();
+  }, []);
 
-### Deep Dive
+  if (loading)
+    return (
+      <div className="loading">
+        <div className="spinner"></div>
+      </div>
+    );
 
-Inspired by Medium's clean layouts, we use generous white (black) space, clear typographic hierarchy, and comfortable line lengths. Images are centered and scaled responsively. Categories and tags sit near the title for quick scanning, but the focus remains on the content.
+  if (error)
+    return (
+      <div className="error">
+        Error: {error}
+      </div>
+    );
 
-By emphasizing visual rhythm — spacing between headings, paragraphs, and tables — readers can skim without losing context, much like reading a well-structured magazine article.
-
-> All experiments emphasize legibility and revocability over growth-at-all-costs.
-`,
-};
-
-export default function Blogs({ data: customData }) {
-  const data = { ...defaultData, ...(customData || {}) };
-  const [imgLoaded, setImgLoaded] = useState(!data.thumbnail);
 
   return (
-    <div className="blog-container">
-      <div className="background-layer" />
-      <div className="background-accent" />
+    <>
+      <Helmet>
+        <title>Blogs | Philonet</title>
+        <meta name="description" content="Read the latest blogs on design, technology, and social systems by Philonet." />
+        <meta name="keywords" content="Philonet, Blogs, Design, Technology, Social Systems" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
 
-      {/* Header */}
-      <div className="header-wrapper">
-        <h1 className="blog-title">{data.title}</h1>
-        <div className="title-underline" />
-        <p className="posted-at">{data.postedAt}</p>
-        <div className="category-tag-wrapper">
-          {data.categories.map((c, i) => <a key={i} className="category-link" href="#">{c}</a>)}
-        </div>
-        <div className="category-tag-wrapper">
-          {data.tags.map((t, i) => <span key={i} className="tag">{t}</span>)}
-        </div>
-        {data.description && <p className="blog-description">{data.description}</p>}
-      </div>
-
-      {/* Thumbnail */}
-      {data.thumbnail && (
-        <div className="hero-wrapper">
-          <div className="hero-container">
-            <figure className="hero-figure">
-              <img src={data.thumbnail} alt="Thumbnail" onLoad={() => setImgLoaded(true)} />
-              <div className="scrim" />
-              <div className="grain" />
-            </figure>
+      <div className="blogs-container">
+        {blogs.slice(0, 6).map((blog) => (
+          <div
+            key={blog.article_id}
+            className="blog-card"
+            onClick={() => navigate(`/blogs/${blog.article_id}`)}
+          >
+            {blog.thumbnail_url && (
+              <img
+                src={blog.thumbnail_url}
+                alt={blog.title}
+                className="blog-thumbnail"
+              />
+            )}
+            <div className="blog-content">
+              <h3>{blog.title || "Untitled Blog"}</h3>
+              <p>
+                {blog.summary
+                  ? blog.summary.slice(0, 120) + "..."
+                  : "No summary available"}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Markdown Content */}
-      <div className="blog-content">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {data.summaryMarkdown}
-        </ReactMarkdown>
+        ))}
       </div>
-    </div>
+    </>
   );
 }
