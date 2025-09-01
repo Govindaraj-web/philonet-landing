@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import LandingPage from "./components/LandingPage";
 import BlogDetails from "./pages/BlogDetails"; 
+import Feed from "./pages/PhilonetNewsFeed"
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/blogs" element={<LandingPage />} />
         <Route path="/blogs/:articleId" element={<BlogDetails />} />
         <Route path="/sign-in" element={<LandingPage />} />
+        <Route path="/feed" element={<Feed />} />
 
         {/* Fallback for unknown routes */}
         <Route path="*" element={<LandingPage />} />
