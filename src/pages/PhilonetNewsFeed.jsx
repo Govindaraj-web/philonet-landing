@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Search,
   Globe,
@@ -40,29 +40,10 @@ import {
 import "./PhilonetNewsFeed.css";
 
 const topics = [
-  "Top stories",
-  "India",
-  "World",
-  "Business",
-  "Technology",
-  "Science",
-  "Sports",
-  "Entertainment",
-  "Health",
-  "Travel",
-  "Education",
-  "Finance",
-  "Lifestyle",
-  "Music",
-  "Movies",
-  "Gaming",
-  "Food",
-  "Art",
-  "Environment",
-  "Politics",
-  "Weather",
-  "Startups",
-  "Culture",
+  "Top stories", "India", "World", "Business", "Technology", "Science", "Sports",
+  "Entertainment", "Health", "Travel", "Education", "Finance", "Lifestyle", "Music",
+  "Movies", "Gaming", "Food", "Art", "Environment", "Politics", "Weather",
+  "Startups", "Culture",
 ];
 
 const icons = {
@@ -83,7 +64,7 @@ const icons = {
   Gaming: <Zap className="icon" />,
   Food: <Camera className="icon" />,
   Art: <Award className="icon" />,
-  Environment: <Code className="icon" />, // replaced Cloud to Code for import correctness
+  Environment: <Code className="icon" />,
   Politics: <Bell className="icon" />,
   Weather: <Battery className="icon" />,
   Startups: <Code className="icon" />,
@@ -92,9 +73,29 @@ const icons = {
 
 const topicIcon = (t) => icons[t] || <Star className="icon" />;
 
+const SkeletonCard = () => (
+  <div className="article-card fade-slide-up" style={{ height: "260px" }}>
+    <div className="article-grid">
+      <div className="article-content">
+        <div className="article-meta skeleton-line" />
+        <div className="skeleton-line" style={{ width: "80%", height: "20px" }} />
+        <div className="skeleton-box" style={{ height: "100px" }} />
+        <div className="skeleton-line" style={{ width: "90%", height: "14px" }} />
+      </div>
+      <div className="skeleton-box" style={{ height: "150%", width: "100%" }} />
+    </div>
+  </div>
+);
+
 function PhilonetNewsFeed() {
+  const [allArticles, setAllArticles] = useState([]);
   const [visibleArticles, setVisibleArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTopic, setActiveTopic] = useState("Top stories");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Refs for scrolling
+  const articleRefs = useRef({});
 
   const API_URL =
     "https://philoquent-genie-389259153114.us-central1.run.app/v1/room/public/feedArticles?sort_by=trending&page=1&limit=10";
@@ -109,19 +110,18 @@ function PhilonetNewsFeed() {
           const mapped = data.articles.map((item) => {
             const a = item.article;
             const seconds = Math.floor((new Date() - new Date(a.created_at)) / 1000);
-
             const age =
               seconds < 60
                 ? `${seconds} sec ago`
                 : seconds < 3600
-                ? `${Math.floor(seconds / 60)} min ago`
-                : seconds < 86400
-                ? `${Math.floor(seconds / 3600)} hour${Math.floor(seconds / 3600) > 1 ? "s" : ""} ago`
-                : seconds < 2592000
-                ? `${Math.floor(seconds / 86400)} day${Math.floor(seconds / 86400) > 1 ? "s" : ""} ago`
-                : seconds < 31104000
-                ? `${Math.floor(seconds / 2592000)} month${Math.floor(seconds / 2592000) > 1 ? "s" : ""} ago`
-                : `${Math.floor(seconds / 31104000)} year${Math.floor(seconds / 31104000) > 1 ? "s" : ""} ago`;
+                  ? `${Math.floor(seconds / 60)} min ago`
+                  : seconds < 86400
+                    ? `${Math.floor(seconds / 3600)} hour${Math.floor(seconds / 3600) > 1 ? "s" : ""} ago`
+                    : seconds < 2592000
+                      ? `${Math.floor(seconds / 86400)} day${Math.floor(seconds / 86400) > 1 ? "s" : ""} ago`
+                      : seconds < 31104000
+                        ? `${Math.floor(seconds / 2592000)} month${Math.floor(seconds / 2592000) > 1 ? "s" : ""} ago`
+                        : `${Math.floor(seconds / 31104000)} year${Math.floor(seconds / 31104000) > 1 ? "s" : ""} ago`;
 
             return {
               id: a.id,
@@ -141,7 +141,7 @@ function PhilonetNewsFeed() {
             };
           });
 
-          // Directly set articles to avoid blink
+          setAllArticles(mapped);
           setVisibleArticles(mapped);
         }
       } catch (err) {
@@ -153,6 +153,48 @@ function PhilonetNewsFeed() {
 
     fetchArticles();
   }, []);
+
+  const handleTopicClick = (topic) => {
+    setActiveTopic(topic);
+    setSearchQuery("");
+    if (topic === "Top stories") {
+      setVisibleArticles(allArticles);
+    } else {
+      const filtered = allArticles.filter((a) =>
+        a.source.toLowerCase().includes(topic.toLowerCase())
+      );
+      setVisibleArticles(filtered);
+    }
+  };
+
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (!query) {
+      handleTopicClick(activeTopic);
+      return;
+    }
+
+    const filtered = allArticles
+      .filter(
+        (a) =>
+          a.title.toLowerCase().includes(query.toLowerCase()) ||
+          a.summary.toLowerCase().includes(query.toLowerCase()) ||
+          a.source.toLowerCase().includes(query.toLowerCase()) ||
+          a.tag.toLowerCase().includes(query.toLowerCase())
+      )
+      .sort((a, b) => b.views - a.views);
+
+    setVisibleArticles(filtered);
+  };
+
+  const scrollToArticle = (id) => {
+    const el = articleRefs.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <div className="page-container">
@@ -168,6 +210,8 @@ function PhilonetNewsFeed() {
                 type="text"
                 placeholder="Search topics, sources, places…"
                 className="search-input"
+                value={searchQuery}
+                onChange={handleSearch}
               />
               <Search className="search-icon" />
               <kbd className="search-key">/</kbd>
@@ -175,9 +219,12 @@ function PhilonetNewsFeed() {
           </div>
           <nav className="nav">
             <ul className="topic-list">
-              {topics.map((t, idx) => (
+              {topics.map((t) => (
                 <li key={t}>
-                  <button className={`topic-btn ${idx === 0 ? "active" : ""}`}>
+                  <button
+                    className={`topic-btn ${activeTopic === t ? "active" : ""}`}
+                    onClick={() => handleTopicClick(t)}
+                  >
                     {topicIcon(t)}
                     <span>{t}</span>
                   </button>
@@ -191,16 +238,16 @@ function PhilonetNewsFeed() {
         <main className="main-grid">
           {/* Articles */}
           <section className="articles-list">
-            {loading && (
-              <div className="loading">
-                <Loader2 className="spinner" />
-                <span>Fetching stories…</span>
-              </div>
-            )}
+            {loading &&
+              Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
 
             {!loading &&
               visibleArticles.map((a) => (
-                <article key={a.id} className="article-card fade-slide-up">
+                <article
+                  key={a.id}
+                  className="article-card fade-slide-up"
+                  ref={(el) => (articleRefs.current[a.id] = el)} // Attach ref
+                >
                   <div className="article-grid">
                     <div className="article-content">
                       <div className="article-meta">
@@ -234,7 +281,13 @@ function PhilonetNewsFeed() {
                         </span>
                       </div>
 
-                      <h2 className="article-title">{a.title}</h2>
+                      <h2
+                        className="article-title"
+                        onClick={() => window.open(a.url, "_blank")}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {a.title}
+                      </h2>
 
                       <div className="article-image-wrapper" id="mobileshow">
                         <div className="image-overlay" />
@@ -243,6 +296,7 @@ function PhilonetNewsFeed() {
                           alt="Article visual"
                           className="article-image"
                           loading="lazy"
+                          onClick={() => window.open(a.url, "_blank")}
                         />
                       </div>
 
@@ -276,6 +330,7 @@ function PhilonetNewsFeed() {
                         alt="Article visual"
                         className="article-image"
                         loading="lazy"
+                        onClick={() => window.open(a.url, "_blank")}
                       />
                     </div>
                   </div>
@@ -290,7 +345,12 @@ function PhilonetNewsFeed() {
                 <h3>Quick Picks</h3>
                 <ul>
                   {visibleArticles.map((a, i) => (
-                    <li key={i} className="quick-pick-item">
+                    <li
+                      key={i}
+                      className="quick-pick-item"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => scrollToArticle(a.id)} // Scroll to article
+                    >
                       <span className="qp-title">{a.title}</span>
                       <div className="qp-meta">
                         <span>{a.source}</span> · <span>{a.age} ago</span>
