@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   Search,
   Globe,
@@ -87,94 +87,198 @@ const SkeletonCard = () => (
   </div>
 );
 
+// Helper function to get a random sample of articles
+function getRandomArticles(arr, num) {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+}
+
 function PhilonetNewsFeed() {
   const [allArticles, setAllArticles] = useState([]);
   const [visibleArticles, setVisibleArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTopic, setActiveTopic] = useState("Top stories");
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [quickPicks, setQuickPicks] = useState([]);
 
-  // Refs for scrolling
   const articleRefs = useRef({});
+  const loader = useRef(null);
 
-  const API_URL =
-    "https://philoquent-genie-389259153114.us-central1.run.app/v1/room/public/feedArticles?sort_by=trending&page=1&limit=10";
+  const API_URL = "https://philoquent-genie-389259153114.us-central1.run.app/v1/room/public/feedArticles?sort_by=trending&limit=10";
 
-  useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
+  const mapArticles = (items) => {
+    return items.map((item) => {
+      const a = item.article;
+      const seconds = Math.floor((new Date() - new Date(a.created_at)) / 1000);
+      const age =
+        seconds < 60
+          ? `${seconds} sec ago`
+          : seconds < 3600
+            ? `${Math.floor(seconds / 60)} min ago`
+            : seconds < 86400
+              ? `${Math.floor(seconds / 3600)} hour${Math.floor(seconds / 3600) > 1 ? "s" : ""} ago`
+              : seconds < 2592000
+                ? `${Math.floor(seconds / 86400)} day${Math.floor(seconds / 86400) > 1 ? "s" : ""} ago`
+                : seconds < 31104000
+                  ? `${Math.floor(seconds / 2592000)} month${Math.floor(seconds / 2592000) > 1 ? "s" : ""} ago`
+                  : `${Math.floor(seconds / 31104000)} year${Math.floor(seconds / 31104000) > 1 ? "s" : ""} ago`;
 
-        if (data.success && Array.isArray(data.articles)) {
-          const mapped = data.articles.map((item) => {
-            const a = item.article;
-            const seconds = Math.floor((new Date() - new Date(a.created_at)) / 1000);
-            const age =
-              seconds < 60
-                ? `${seconds} sec ago`
-                : seconds < 3600
-                  ? `${Math.floor(seconds / 60)} min ago`
-                  : seconds < 86400
-                    ? `${Math.floor(seconds / 3600)} hour${Math.floor(seconds / 3600) > 1 ? "s" : ""} ago`
-                    : seconds < 2592000
-                      ? `${Math.floor(seconds / 86400)} day${Math.floor(seconds / 86400) > 1 ? "s" : ""} ago`
-                      : seconds < 31104000
-                        ? `${Math.floor(seconds / 2592000)} month${Math.floor(seconds / 2592000) > 1 ? "s" : ""} ago`
-                        : `${Math.floor(seconds / 31104000)} year${Math.floor(seconds / 31104000) > 1 ? "s" : ""} ago`;
+      return {
+        id: a.id,
+        title: a.title,
+        summary: a.summary,
+        url: a.url,
+        source: a.category || "Philonet News",
+        age: age,
+        image: a.thumbnail_url,
+        tag: a.tags?.[0] || "General",
+        postedBy: item.shared_by?.name || "Anonymous",
+        picture: item.shared_by?.picture || null,
+        likes: Math.floor(Math.random() * 500),
+        retweets: Math.floor(Math.random() * 100),
+        comments: a.comment_count || 0,
+        views: Math.floor(500 + Math.random() * 2000),
+      };
+    });
+  };
 
-            return {
-              id: a.id,
-              title: a.title,
-              summary: a.summary,
-              url: a.url,
-              source: a.category || "Philonet News",
-              age: age,
-              image: a.thumbnail_url,
-              tag: a.tags?.[0] || "General",
-              postedBy: item.shared_by?.name || "Anonymous",
-              picture: item.shared_by?.picture || null,
-              likes: Math.floor(Math.random() * 500),
-              retweets: Math.floor(Math.random() * 100),
-              comments: a.comment_count || 0,
-              views: Math.floor(500 + Math.random() * 2000),
-            };
-          });
+  const fetchArticles = useCallback(async (pageToFetch) => {
+    setIsFetchingMore(true);
+    try {
+      const res = await fetch(`${API_URL}&page=${pageToFetch}`);
+      const data = await res.json();
 
-          setAllArticles(mapped);
-          setVisibleArticles(mapped);
+      if (data.success && Array.isArray(data.articles)) {
+        const mapped = mapArticles(data.articles);
+        if (mapped.length === 0) {
+          setHasMore(false);
         }
-      } catch (err) {
-        console.error("Error fetching articles:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchArticles();
+        setAllArticles(prev => {
+          const newArticleIds = new Set(prev.map(a => a.id));
+          const uniqueNewArticles = mapped.filter(a => !newArticleIds.has(a.id));
+          return [...prev, ...uniqueNewArticles];
+        });
+
+        setVisibleArticles(prev => {
+          const newArticleIds = new Set(prev.map(a => a.id));
+          const uniqueNewArticles = mapped.filter(a => !newArticleIds.has(a.id));
+          return [...prev, ...uniqueNewArticles];
+        });
+
+        setPage(pageToFetch);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error("Error fetching articles:", err);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+      setIsFetchingMore(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchArticles(1);
+  }, [fetchArticles]);
+
+  useEffect(() => {
+    if (searchQuery !== "" || activeTopic !== "Top stories" || !hasMore || loading || isFetchingMore) {
+      return;
+    }
+
+    const options = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 1.0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        fetchArticles(page + 1);
+      }
+    }, options);
+
+    if (loader.current) {
+      observer.observe(loader.current);
+    }
+
+    return () => {
+      if (loader.current) {
+        observer.unobserve(loader.current);
+      }
+    };
+  }, [hasMore, loading, isFetchingMore, searchQuery, page, activeTopic, fetchArticles]);
+
+  // Update quick picks whenever visible articles change
+  useEffect(() => {
+    setQuickPicks(getRandomArticles(visibleArticles, 10));
+  }, [visibleArticles]);
+
+
   const handleTopicClick = (topic) => {
+    if (topic === activeTopic && searchQuery === "") {
+      return;
+    }
+
     setActiveTopic(topic);
     setSearchQuery("");
+
     if (topic === "Top stories") {
-      setVisibleArticles(allArticles);
+      setHasMore(true);
+      if (allArticles.length === 0) {
+        setLoading(true);
+        fetchArticles(1);
+      } else {
+        setVisibleArticles(allArticles);
+        setLoading(false);
+      }
+      return;
+    }
+
+    setHasMore(false);
+    setLoading(true);
+
+    const filtered = allArticles.filter((a) => a.source.toLowerCase().includes(topic.toLowerCase()));
+
+    if (filtered.length === 0) {
+      setAllArticles([]);
+      setVisibleArticles([]);
+      setLoading(true);
+      const fetchAndFilter = async () => {
+        try {
+          const res = await fetch(`${API_URL}&page=1`);
+          const data = await res.json();
+          if (data.success && Array.isArray(data.articles)) {
+            const mapped = mapArticles(data.articles);
+            setAllArticles(mapped);
+            const filteredMapped = mapped.filter(a => a.source.toLowerCase().includes(topic.toLowerCase()));
+            setVisibleArticles(filteredMapped);
+          }
+        } catch (err) {
+          console.error("Error fetching or filtering:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchAndFilter();
     } else {
-      const filtered = allArticles.filter((a) =>
-        a.source.toLowerCase().includes(topic.toLowerCase())
-      );
       setVisibleArticles(filtered);
+      setLoading(false);
     }
   };
 
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-
-    if (!query) {
-      handleTopicClick(activeTopic);
-      return;
-    }
+    setActiveTopic("");
+    setHasMore(false);
+    setLoading(true);
 
     const filtered = allArticles
       .filter(
@@ -187,6 +291,7 @@ function PhilonetNewsFeed() {
       .sort((a, b) => b.views - a.views);
 
     setVisibleArticles(filtered);
+    setLoading(false);
   };
 
   const scrollToArticle = (id) => {
@@ -199,7 +304,6 @@ function PhilonetNewsFeed() {
   return (
     <div className="page-container">
       <div className="content-wrapper">
-        {/* Header */}
         <header className="header">
           <div className="header-top">
             <Flame className="flame-icon" />
@@ -234,96 +338,64 @@ function PhilonetNewsFeed() {
           </nav>
         </header>
 
-        {/* Main */}
         <main className="main-grid">
-          {/* Articles */}
           <section className="articles-list">
-            {loading &&
-              Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+            {loading && !isFetchingMore && visibleArticles.length === 0 && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
 
-            {!loading &&
-              visibleArticles.map((a) => (
-                <article
-                  key={a.id}
-                  className="article-card fade-slide-up"
-                  ref={(el) => (articleRefs.current[a.id] = el)} // Attach ref
-                >
-                  <div className="article-grid">
-                    <div className="article-content">
-                      <div className="article-meta">
-                        <span className="tag">
-                          <TagIcon className="icon-small" /> {a.tag}
-                        </span>
-                        <span className="source">
-                          <Newspaper className="icon-small" /> {a.source}
-                        </span>
-                        <span className="time">
-                          <Clock className="icon-small" /> {a.age}
-                        </span>
-                        <span className="author">
-                          {a.picture ? (
-                            <img
-                              src={a.picture}
-                              alt={a.postedBy}
-                              className="icon-small"
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: "50%",
-                                objectFit: "cover",
-                                marginRight: "6px",
-                              }}
-                            />
-                          ) : (
-                            <UserCircle className="icon-small" />
-                          )}
-                          {a.postedBy}
-                        </span>
-                      </div>
+            {!loading && visibleArticles.length === 0 && (
+              <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
+                No articles found for "{activeTopic || searchQuery}".
+              </div>
+            )}
 
-                      <h2
-                        className="article-title"
-                        onClick={() => window.open(a.url, "_blank")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {a.title}
-                      </h2>
-
-                      <div className="article-image-wrapper" id="mobileshow">
-                        <div className="image-overlay" />
-                        <img
-                          src={a.image}
-                          alt="Article visual"
-                          className="article-image"
-                          loading="lazy"
-                          onClick={() => window.open(a.url, "_blank")}
-                        />
-                      </div>
-
-                      <p className="article-summary">{a.summary}</p>
-
-                      <div className="article-reactions">
-                        <div className="reactions-left">
-                          <span className="reaction comment">
-                            <MessageCircle className="icon" /> {a.comments}
-                          </span>
-                          <span className="reaction retweet">
-                            <Repeat2 className="icon" /> {a.retweets}
-                          </span>
-                          <span className="reaction like">
-                            <Heart className="icon" /> {a.likes}
-                          </span>
-                          <span className="reaction views">
-                            <BarChart3 className="icon" /> {a.views}
-                          </span>
-                        </div>
-                        <button className="more-btn">
-                          <MoreHorizontal className="icon" />
-                        </button>
-                      </div>
+            {visibleArticles.map((a, index) => (
+              <article
+                key={`${a.id}-${index}`}
+                className="article-card fade-slide-up"
+                ref={(el) => (articleRefs.current[a.id] = el)}
+              >
+                <div className="article-grid">
+                  <div className="article-content">
+                    <div className="article-meta">
+                      <span className="tag">
+                        <TagIcon className="icon-small" /> {a.tag}
+                      </span>
+                      <span className="source">
+                        <Newspaper className="icon-small" /> {a.source}
+                      </span>
+                      <span className="time">
+                        <Clock className="icon-small" /> {a.age}
+                      </span>
+                      <span className="author">
+                        {a.picture ? (
+                          <img
+                            src={a.picture}
+                            alt={a.postedBy}
+                            className="icon-small"
+                            style={{
+                              width: "20px",
+                              height: "20px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              marginRight: "6px",
+                            }}
+                          />
+                        ) : (
+                          <UserCircle className="icon-small" />
+                        )}
+                        {a.postedBy}
+                      </span>
                     </div>
 
-                    <div className="article-image-wrapper" id="mobilehidden">
+                    <h2
+                      className="article-title"
+                      onClick={() => window.open(a.url, "_blank")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {a.title}
+                    </h2>
+
+                    <div className="article-image-wrapper" id="mobileshow">
                       <div className="image-overlay" />
                       <img
                         src={a.image}
@@ -333,27 +405,70 @@ function PhilonetNewsFeed() {
                         onClick={() => window.open(a.url, "_blank")}
                       />
                     </div>
+
+                    <p className="article-summary">{a.summary}</p>
+
+                    <div className="article-reactions">
+                      <div className="reactions-left">
+                        <span className="reaction comment">
+                          <MessageCircle className="icon" /> {a.comments}
+                        </span>
+                        <span className="reaction retweet">
+                          <Repeat2 className="icon" /> {a.retweets}
+                        </span>
+                        <span className="reaction like">
+                          <Heart className="icon" /> {a.likes}
+                        </span>
+                        <span className="reaction views">
+                          <BarChart3 className="icon" /> {a.views}
+                        </span>
+                      </div>
+                      <button className="more-btn">
+                        <MoreHorizontal className="icon" />
+                      </button>
+                    </div>
                   </div>
-                </article>
-              ))}
+
+                  <div className="article-image-wrapper" id="mobilehidden">
+                    <div className="image-overlay" />
+                    <img
+                      src={a.image}
+                      alt="Article visual"
+                      className="article-image"
+                      loading="lazy"
+                      onClick={() => window.open(a.url, "_blank")}
+                    />
+                  </div>
+                </div>
+              </article>
+            ))}
+
+            {isFetchingMore && hasMore && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+
+            {!hasMore && !loading && (
+              <div style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+                <p>You've reached the end of the news feed.</p>
+              </div>
+            )}
+
+            <div ref={loader} style={{ height: "1px", visibility: "hidden" }} />
           </section>
 
-          {/* Sidebar */}
           <div id="mobilesidebarhidden">
             <aside className="sidebar">
               <div className="quick-picks">
                 <h3>Quick Picks</h3>
                 <ul>
-                  {visibleArticles.map((a, i) => (
+                  {quickPicks.map((a, i) => (
                     <li
-                      key={i}
+                      key={`${a.id}-${i}`}
                       className="quick-pick-item"
                       style={{ cursor: "pointer" }}
-                      onClick={() => scrollToArticle(a.id)} // Scroll to article
+                      onClick={() => scrollToArticle(a.id)}
                     >
                       <span className="qp-title">{a.title}</span>
                       <div className="qp-meta">
-                        <span>{a.source}</span> · <span>{a.age} ago</span>
+                        <span>{a.source}</span> · <span>{a.age}</span>
                       </div>
                     </li>
                   ))}
