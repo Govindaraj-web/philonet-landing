@@ -1,18 +1,13 @@
 .page-container {
   min-height: 100vh;
-  /* same as min-h-screen */
   width: 100%;
-  /* same as w-full */
 }
 
 .content-wrapper {
   margin-left: auto;
-  /* same as mx-auto */
   margin-right: auto;
   width: 100%;
-  /* same as w-full */
   max-width: 1280px;
-  /* Tailwind's max-w-7xl = 80rem = 1280px */
 }
 
 .header {
@@ -39,12 +34,18 @@
 
 }
 
-.flame-icon {
+/* .flame-icon {
   width: 24px;
   height: 24px;
   color: #60a5fa;
-  /* blue-400 */
   flex-shrink: 0;
+} */
+.flame-icon1{
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #1205c6, rgb(11, 119, 202));
+  flex-shrink: 0;
+  border-radius: 5px;
 }
 
 .logo-text {
@@ -130,35 +131,18 @@
   color: rgba(255, 255, 255, 0.5);
   transform: translateY(-50%);
   pointer-events: none;
-  /* ✅ ensures input focus works even if clicked */
 }
 
 
 
 
-/* .nav {
-  padding: 0 5px 12px;
-  overflow-x: auto;
-  width: 50%;
-  scrollbar-width: none;
-}
-
-.topic-list {
-  display: flex;
-  gap: 8px;
-  min-width: 150%;
-  list-style: none;
-} */
 .nav {
   padding: 0 2px 4px;
   overflow-x: auto;
   width: 50%;
   scrollbar-width: none;
   -ms-overflow-style: none;
-
-
 }
-
 
 .nav::-webkit-scrollbar {
   display: none;

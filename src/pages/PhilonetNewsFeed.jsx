@@ -87,7 +87,7 @@ const SkeletonCard = () => (
   </div>
 );
 
-// Helper function to get a random sample of articles
+// Helper function to get random sample of articles
 function getRandomArticles(arr, num) {
   const shuffled = [...arr].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, num);
@@ -106,6 +106,7 @@ function PhilonetNewsFeed() {
 
   const articleRefs = useRef({});
   const loader = useRef(null);
+  const scrollPositions = useRef({});
 
   const API_URL = "https://philoquent-genie-389259153114.us-central1.run.app/v1/room/public/feedArticles?sort_by=trending&limit=10";
 
@@ -187,44 +188,29 @@ function PhilonetNewsFeed() {
   }, [fetchArticles]);
 
   useEffect(() => {
-    if (searchQuery !== "" || activeTopic !== "Top stories" || !hasMore || loading || isFetchingMore) {
-      return;
-    }
+    if (searchQuery !== "" || activeTopic !== "Top stories" || !hasMore || loading || isFetchingMore) return;
 
-    const options = {
-      root: null,
-      rootMargin: "20px",
-      threshold: 1.0,
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) fetchArticles(page + 1);
+      },
+      { root: null, rootMargin: "20px", threshold: 1.0 }
+    );
 
-    const observer = new IntersectionObserver((entries) => {
-      const target = entries[0];
-      if (target.isIntersecting) {
-        fetchArticles(page + 1);
-      }
-    }, options);
+    if (loader.current) observer.observe(loader.current);
 
-    if (loader.current) {
-      observer.observe(loader.current);
-    }
-
-    return () => {
-      if (loader.current) {
-        observer.unobserve(loader.current);
-      }
-    };
+    return () => loader.current && observer.unobserve(loader.current);
   }, [hasMore, loading, isFetchingMore, searchQuery, page, activeTopic, fetchArticles]);
 
-  // Update quick picks whenever visible articles change
   useEffect(() => {
     setQuickPicks(getRandomArticles(visibleArticles, 10));
   }, [visibleArticles]);
 
-
   const handleTopicClick = (topic) => {
-    if (topic === activeTopic && searchQuery === "") {
-      return;
-    }
+    // Save current scroll
+    scrollPositions.current[activeTopic] = window.scrollY;
+
+    if (topic === activeTopic && searchQuery === "") return;
 
     setActiveTopic(topic);
     setSearchQuery("");
@@ -238,13 +224,23 @@ function PhilonetNewsFeed() {
         setVisibleArticles(allArticles);
         setLoading(false);
       }
+
+      // Restore scroll
+      setTimeout(() => {
+        if (scrollPositions.current[topic] !== undefined) {
+          window.scrollTo({ top: scrollPositions.current[topic], behavior: "auto" });
+        }
+      }, 50);
+
       return;
     }
 
     setHasMore(false);
     setLoading(true);
 
-    const filtered = allArticles.filter((a) => a.source.toLowerCase().includes(topic.toLowerCase()));
+    const filtered = allArticles.filter(a =>
+      a.source.toLowerCase().includes(topic.toLowerCase())
+    );
 
     if (filtered.length === 0) {
       setAllArticles([]);
@@ -257,7 +253,9 @@ function PhilonetNewsFeed() {
           if (data.success && Array.isArray(data.articles)) {
             const mapped = mapArticles(data.articles);
             setAllArticles(mapped);
-            const filteredMapped = mapped.filter(a => a.source.toLowerCase().includes(topic.toLowerCase()));
+            const filteredMapped = mapped.filter(a =>
+              a.source.toLowerCase().includes(topic.toLowerCase())
+            );
             setVisibleArticles(filteredMapped);
           }
         } catch (err) {
@@ -296,9 +294,7 @@ function PhilonetNewsFeed() {
 
   const scrollToArticle = (id) => {
     const el = articleRefs.current[id];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -306,7 +302,8 @@ function PhilonetNewsFeed() {
       <div className="content-wrapper">
         <header className="header">
           <div className="header-top">
-            <Flame className="flame-icon" />
+            {/* <Flame className="flame-icon" /> */}
+            <img src="/philonet.png" alt="AI_Logo" className="flame-icon1" />
             <div className="logo-text">Philonet Public</div>
             <span className="preview-badge">Preview</span>
             <div className="search-wrapper">
@@ -340,7 +337,9 @@ function PhilonetNewsFeed() {
 
         <main className="main-grid">
           <section className="articles-list">
-            {loading && !isFetchingMore && visibleArticles.length === 0 && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+            {loading && !isFetchingMore && visibleArticles.length === 0 &&
+              Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+            }
 
             {!loading && visibleArticles.length === 0 && (
               <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
@@ -403,6 +402,7 @@ function PhilonetNewsFeed() {
                         className="article-image"
                         loading="lazy"
                         onClick={() => window.open(a.url, "_blank")}
+                        onError={(e) => (e.target.src = "/default.png")}
                       />
                     </div>
 
@@ -437,13 +437,16 @@ function PhilonetNewsFeed() {
                       className="article-image"
                       loading="lazy"
                       onClick={() => window.open(a.url, "_blank")}
+                      onError={(e) => (e.target.src = "/default.png")}
                     />
                   </div>
                 </div>
               </article>
             ))}
 
-            {isFetchingMore && hasMore && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+            {isFetchingMore && hasMore &&
+              Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+            }
 
             {!hasMore && !loading && (
               <div style={{ textAlign: "center", padding: "20px", color: "#888" }}>
