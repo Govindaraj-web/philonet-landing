@@ -43,7 +43,7 @@
 .flame-icon1{
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #1205c6, rgb(11, 119, 202));
+  background: white;
   flex-shrink: 0;
   border-radius: 5px;
 }
