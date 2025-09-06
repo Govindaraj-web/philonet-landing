@@ -2,10 +2,8 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   Search,
   Globe,
-  Flame,
   Star,
   MoreHorizontal,
-  Loader2,
   Tag as TagIcon,
   Newspaper,
   Clock,
@@ -16,59 +14,42 @@ import {
   BarChart3,
   Cpu,
   Briefcase,
-  FlaskConical,
   Trophy,
   Clapperboard,
   HeartPulse,
-  MapPin,
-  Bell,
   BookOpen,
-  Camera,
-  Film,
-  Music,
-  ShoppingCart,
-  Wifi,
-  Zap,
-  Coffee,
-  Anchor,
   Airplay,
-  Award,
-  Battery,
-  Code,
+  Shield,
+  Flag,
+  Brain,
+  Receipt,
+  Utensils,
+  Megaphone,
+  Leaf
 } from "lucide-react";
 
-import "./PhilonetNewsFeed.css";
+import "./NewsFeed.css";
 
 const topics = [
-  "Top stories", "India", "World", "Business", "Technology", "Science", "Sports",
-  "Entertainment", "Health", "Travel", "Education", "Finance", "Lifestyle", "Music",
-  "Movies", "Gaming", "Food", "Art", "Environment", "Politics", "Weather",
-  "Startups", "Culture",
+  "Top stories", "World", "Politics", "Artificial", "Business", "Technology", "Health", "Finance", "Cricket", "Social", "Historical","Entertainment", "Transportation", "Education", "Food", "Environment",
 ];
 
 const icons = {
-  India: <MapPin className="icon" />,
   World: <Globe className="icon" />,
+  Politics: <Flag className="icon" />,
+  Artificial: <Brain className="icon" />,
   Business: <Briefcase className="icon" />,
   Technology: <Cpu className="icon" />,
-  Science: <FlaskConical className="icon" />,
-  Sports: <Trophy className="icon" />,
-  Entertainment: <Clapperboard className="icon" />,
   Health: <HeartPulse className="icon" />,
-  Travel: <Airplay className="icon" />,
+  Finance: <Receipt className="icon" />,
+  Cricket: <Trophy className="icon" />,
+  Social: <Megaphone className="icon" />,
+  Historical: <Shield className="icon" />,
+  Entertainment: <Clapperboard className="icon" />,
+  Transportation: <Airplay className="icon" />,
   Education: <BookOpen className="icon" />,
-  Finance: <ShoppingCart className="icon" />,
-  Lifestyle: <Coffee className="icon" />,
-  Music: <Music className="icon" />,
-  Movies: <Film className="icon" />,
-  Gaming: <Zap className="icon" />,
-  Food: <Camera className="icon" />,
-  Art: <Award className="icon" />,
-  Environment: <Code className="icon" />,
-  Politics: <Bell className="icon" />,
-  Weather: <Battery className="icon" />,
-  Startups: <Code className="icon" />,
-  Culture: <Anchor className="icon" />,
+  Food: <Utensils className="icon" />,
+  Environment: <Leaf className="icon" />,
 };
 
 const topicIcon = (t) => icons[t] || <Star className="icon" />;
@@ -93,7 +74,7 @@ function getRandomArticles(arr, num) {
   return shuffled.slice(0, num);
 }
 
-function PhilonetNewsFeed() {
+function NewsFeed() {
   const [allArticles, setAllArticles] = useState([]);
   const [visibleArticles, setVisibleArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -187,6 +168,8 @@ function PhilonetNewsFeed() {
     fetchArticles(1);
   }, [fetchArticles]);
 
+
+  
   useEffect(() => {
     if (searchQuery !== "" || activeTopic !== "Top stories" || !hasMore || loading || isFetchingMore) return;
 
@@ -298,18 +281,18 @@ function PhilonetNewsFeed() {
   };
 
   return (
+    //  Top Content 
     <div className="page-container">
       <div className="content-wrapper">
         <header className="header">
           <div className="header-top">
-            {/* <Flame className="flame-icon" /> */}
-            <img src="/philonet.png" alt="AI_Logo" className="flame-icon1" />
+            <img src="/philonet.png" alt="AI_Logo" className="flame-icon1" style={{ cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
             <div className="logo-text">Philonet Public</div>
             <span className="preview-badge">Preview</span>
             <div className="search-wrapper">
               <input
                 type="text"
-                placeholder="Search topics, sources, places…"
+                placeholder="Explore news by category, business, politics…"
                 className="search-input"
                 value={searchQuery}
                 onChange={handleSearch}
@@ -335,6 +318,7 @@ function PhilonetNewsFeed() {
           </nav>
         </header>
 
+        {/* main content  */}
         <main className="main-grid">
           <section className="articles-list">
             {loading && !isFetchingMore && visibleArticles.length === 0 &&
@@ -394,13 +378,13 @@ function PhilonetNewsFeed() {
                       {a.title}
                     </h2>
 
-                    <div className="article-image-wrapper" id="mobileshow">
+                    <div className="article-image-wrapper" id="mobileview">
                       <div className="image-overlay" />
                       <img
-                        src={a.image}
+                        src={a.image || "/default.png"}
                         alt="Article visual"
                         className="article-image"
-                        loading="lazy"
+                        loading="eager"
                         onClick={() => window.open(a.url, "_blank")}
                         onError={(e) => (e.target.src = "/default.png")}
                       />
@@ -429,13 +413,13 @@ function PhilonetNewsFeed() {
                     </div>
                   </div>
 
-                  <div className="article-image-wrapper" id="mobilehidden">
+                  <div className="article-image-wrapper" id="laptopview">
                     <div className="image-overlay" />
                     <img
-                      src={a.image}
+                      src={a.image || "/default.png"}
                       alt="Article visual"
                       className="article-image"
-                      loading="lazy"
+                      loading="eager"
                       onClick={() => window.open(a.url, "_blank")}
                       onError={(e) => (e.target.src = "/default.png")}
                     />
@@ -457,6 +441,7 @@ function PhilonetNewsFeed() {
             <div ref={loader} style={{ height: "1px", visibility: "hidden" }} />
           </section>
 
+          {/* Side Bar nav */}
           <div id="mobilesidebarhidden">
             <aside className="sidebar">
               <div className="quick-picks">
@@ -485,4 +470,5 @@ function PhilonetNewsFeed() {
   );
 }
 
-export default PhilonetNewsFeed;
+export default NewsFeed;
+    

@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import LandingPage from "./components/LandingPage";
 import BlogDetails from "./pages/BlogDetails"; 
-import Feed from "./pages/PhilonetNewsFeed"
+import Feed from "./pages/NewsFeed"
 
 export default function App() {
   return (
